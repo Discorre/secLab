@@ -1,6 +1,13 @@
 package set
 
-import "errors"
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 // Set - структура для реализации множества
 type Set struct {
@@ -61,4 +68,48 @@ func (s *Set) SET_AT(value int) bool {
 // Size возвращает текущее количество элементов в множестве
 func (s *Set) Size() int {
 	return s.size
+}
+
+// SaveToFile сохраняет множество в файл
+func (s *Set) SaveToFile(filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for i := 0; i < s.size; i++ {
+		_, err := file.WriteString(fmt.Sprintf("%d\n", s.data[i]))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// LoadFromFile загружает множество из файла
+func (s *Set) LoadFromFile(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		value, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			return err
+		}
+		err = s.SETADD(value)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

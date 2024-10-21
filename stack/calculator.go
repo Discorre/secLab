@@ -14,6 +14,8 @@ func applyOperation(a, b int, op rune) int {
 		return a - b
 	case '*':
 		return a * b
+	case '/':
+		return a / b
 	default:
 		panic("неизвестная операция")
 	}
