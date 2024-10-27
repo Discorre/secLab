@@ -1,8 +1,8 @@
 # Название исполняемого файла для Windows
-BINARY=secLab.exe
+#BINARY=secLab.exe
 
 #Название исполняемого файла для Linux
-#BINARY=secLab
+BINARY=secLab
 
 # Команда для сборки
 build:

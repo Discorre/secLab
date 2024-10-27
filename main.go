@@ -30,6 +30,7 @@ func main() {
 		// Используем switch для обработки ввода
 		switch input {
 		case "1":
+			fmt.Print("Введите выражение (+, -, *): ")
 			expression, _ := reader.ReadString('\n') //"3 + 5 * (2 - 8)"
 			result, err := stack.Evaluate(expression)
 			if err != nil {
@@ -38,13 +39,16 @@ func main() {
 				fmt.Println("Результат:", result)
 			}
 		case "2":
+
+			exit := false
+
 			// Создаем новое множество
 			mySet := set.NewSet()
 
 			// Создаем новый сканер для чтения ввода из консоли
 			reader := bufio.NewReader(os.Stdin)
 
-			for {
+			for !exit {
 				// Приглашение для ввода
 				fmt.Print("Введите команду (add, contains, delete, size, save, load, back): ")
 
@@ -126,19 +130,22 @@ func main() {
 					}
 				case "back":
 					fmt.Println("Назад...")
-					break
+					exit = true
 				default:
 					fmt.Println("Неизвестная команда")
 				}
 			}
 		case "3":
+
+			exit := false
+
 			// Создаем новое множество
 			mySet := set.NewSet()
 
 			// Создаем новый сканер для чтения ввода из консоли
 			reader := bufio.NewReader(os.Stdin)
 
-			for {
+			for !exit {
 				// Приглашение для ввода
 				fmt.Print("Введите команду (add, contains, delete, size, save, load, partit, back): ")
 
@@ -231,7 +238,7 @@ func main() {
 					}
 				case "back":
 					fmt.Println("Назад...")
-					break
+					exit = true
 				default:
 					fmt.Println("Неизвестная команда")
 				}
