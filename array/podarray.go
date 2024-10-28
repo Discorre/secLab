@@ -1,29 +1,36 @@
 package array
 
-import "fmt"
+import (
+	"fmt"
+	//"myarray" // Импортируем пакет с MyArray
+)
 
-// GenerateSubsets генерирует все подмножества массива
-func GenerateSubsets(arr []string) {
-	// Получаем все подмножества
-	subsets := make([][]string, 0)
-	n := len(arr)
-	// Общее количество подмножеств = 2^n
-	totalSubsets := 1 << n // 2^n
+// Subarrays выводит все различные подмассивы массива
+func (arr *MyArray[T]) Subarrays() [][]T {
+	subarrays := [][]T{}
 
-	for i := 0; i < totalSubsets; i++ {
-		subset := []string{}
-		for j := 0; j < n; j++ {
-			// Проверяем, включен ли элемент в текущее подмножество
-			if (i & (1 << j)) != 0 {
-				subset = append(subset, arr[j])
+	// Общее количество подмножеств для массива длины `arr.length` = 2^arr.length
+	numSubarrays := 1 << arr.length // 2^length
+
+	for i := 0; i < numSubarrays; i++ {
+		var subset []T
+		for j := 0; j < arr.length; j++ {
+			// Проверяем, включен ли j-й элемент в текущий подмассив
+			if i&(1<<j) != 0 {
+				subset = append(subset, arr.data[j])
 			}
 		}
-		subsets = append(subsets, subset)
+		subarrays = append(subarrays, subset)
 	}
 
-	// Вывод всех подмножеств
-	fmt.Println("Все различные подмножества:")
-	for _, s := range subsets {
-		fmt.Println(s)
+	return subarrays
+}
+
+// PrintSubarrays выводит все подмассивы в удобном формате
+func (arr *MyArray[T]) PrintSubarrays() {
+	subarrays := arr.Subarrays()
+	fmt.Println("Все различные подмассивы:")
+	for _, subset := range subarrays {
+		fmt.Println(subset)
 	}
 }

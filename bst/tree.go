@@ -2,109 +2,107 @@ package bst
 
 import "fmt"
 
-// Tree представляет бинарное дерево поиска
+// Node представляет узел двоичного дерева
+type Node struct {
+	data  int
+	left  *Node
+	right *Node
+}
+
+// Tree представляет двоичное дерево поиска
 type Tree struct {
-	Root *Node // Корень дерева
+	root *Node
 }
 
-// Insert вставляет новое значение в дерево
+// NewNode создает новый узел
+func NewNode(value int) *Node {
+	return &Node{
+		data:  value,
+		left:  nil,
+		right: nil,
+	}
+}
+
+// Insert добавляет элемент в дерево
 func (t *Tree) Insert(value int) {
-	t.Root = insert(t.Root, value) // Вызываем вспомогательную функцию для вставки
+	t.root = t.insert(t.root, value)
 }
 
-// Вспомогательная функция для вставки узла
-func insert(node *Node, value int) *Node {
+func (t *Tree) insert(node *Node, value int) *Node {
 	if node == nil {
-		// Если текущий узел пустой, создаем новый узел
-		return &Node{Value: value}
+		return NewNode(value)
 	}
-	if value < node.Value {
-		// Если значение меньше, рекурсивно вставляем в левое поддерево
-		node.Left = insert(node.Left, value)
+	if value < node.data {
+		node.left = t.insert(node.left, value)
 	} else {
-		// Если значение больше или равно, вставляем в правое поддерево
-		node.Right = insert(node.Right, value)
+		node.right = t.insert(node.right, value)
 	}
-	return node // Возвращаем текущий узел
+	return node
 }
 
-// Delete удаляет узел с заданным значением
+// Delete удаляет элемент из дерева
 func (t *Tree) Delete(value int) {
-	t.Root = deleteNode(t.Root, value) // Обновляем корень после удаления
+	t.root = t.deleteNode(t.root, value)
 }
 
-// Вспомогательная функция для удаления узла
-func deleteNode(node *Node, value int) *Node {
+func (t *Tree) deleteNode(node *Node, value int) *Node {
 	if node == nil {
-		// Если узел пустой, возвращаем nil
 		return nil
 	}
 
-	if value < node.Value {
-		// Если значение меньше, ищем в левом поддереве
-		node.Left = deleteNode(node.Left, value)
-	} else if value > node.Value {
-		// Если значение больше, ищем в правом поддереве
-		node.Right = deleteNode(node.Right, value)
+	if value < node.data {
+		node.left = t.deleteNode(node.left, value)
+	} else if value > node.data {
+		node.right = t.deleteNode(node.right, value)
 	} else {
-		// Узел найден
-		if node.Left == nil {
-			// Если у узла нет левого потомка, возвращаем правого
-			return node.Right
-		} else if node.Right == nil {
-			// Если у узла нет правого потомка, возвращаем левого
-			return node.Left
+		// Найден узел для удаления
+		if node.left == nil {
+			return node.right
+		} else if node.right == nil {
+			return node.left
 		}
 
-		// Узел с двумя потомками: находим минимальный узел в правом поддереве
-		minNode := minValueNode(node.Right)
-		node.Value = minNode.Value         // Заменяем значение удаляемого узла на минимальное
-		node.Right = deleteNode(node.Right, minNode.Value) // Удаляем минимальный узел
+		// Найдем минимальный узел в правом поддереве
+		minNode := t.findMin(node.right)
+		node.data = minNode.data // Скопируем значение минимального узла
+		node.right = t.deleteNode(node.right, minNode.data) // Удаляем минимальный узел
 	}
-	return node // Возвращаем текущий узел
+	return node
 }
 
-// minValueNode находит узел с минимальным значением
-func minValueNode(node *Node) *Node {
-	current := node
-	// Ищем самый левый узел в правом поддереве
-	for current.Left != nil {
-		current = current.Left
+// findMin находит узел с минимальным значением
+func (t *Tree) findMin(node *Node) *Node {
+	for node.left != nil {
+		node = node.left
 	}
-	return current // Возвращаем узел с минимальным значением
+	return node
 }
 
-// InOrder выводит значения дерева в порядке возрастания
+// InOrder выполняет in-order обход дерева и выводит значения
 func (t *Tree) InOrder() {
-	inOrder(t.Root) // Запускаем вспомогательную функцию для обхода дерева
-	fmt.Println()   // Печатаем перевод строки
+	t.inOrder(t.root)
+	fmt.Println()
 }
 
-// Вспомогательная функция для обхода дерева в порядке возрастания
-func inOrder(node *Node) {
+func (t *Tree) inOrder(node *Node) {
 	if node != nil {
-		inOrder(node.Left)          // Сначала обходим левое поддерево
-		fmt.Print(node.Value, " ")  // Затем печатаем значение узла
-		inOrder(node.Right)         // В конце обходим правое поддерево
+		t.inOrder(node.left)
+		fmt.Print(node.data, " ")
+		t.inOrder(node.right)
 	}
 }
 
 // IsValidBST проверяет, является ли дерево корректным бинарным деревом поиска
 func (t *Tree) IsValidBST() bool {
-	return isValidBST(t.Root, nil, nil) // Запускаем проверку с корнем и без ограничений
+	return t.isValidBST(t.root, nil, nil)
 }
 
-// Вспомогательная функция для проверки корректности дерева
-func isValidBST(node *Node, min *int, max *int) bool {
+func (t *Tree) isValidBST(node *Node, min, max *int) bool {
 	if node == nil {
-		return true // Пустое поддерево корректно
+		return true
 	}
-
-	// Проверяем, что значение узла находится в заданных пределах
-	if (min != nil && node.Value <= *min) || (max != nil && node.Value >= *max) {
-		return false // Если значение узла выходит за границы, дерево некорректно
+	if (min != nil && node.data <= *min) || (max != nil && node.data >= *max) {
+		return false
 	}
-
-	// Рекурсивно проверяем левое и правое поддеревья с обновленными границами
-	return isValidBST(node.Left, min, &node.Value) && isValidBST(node.Right, &node.Value, max)
+	return t.isValidBST(node.left, min, &node.data) && t.isValidBST(node.right, &node.data, max)
 }

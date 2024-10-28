@@ -39,29 +39,28 @@ func main() {
 				fmt.Println("Результат:", result)
 			}
 		case "2":
-
 			exit := false
 
 			// Создаем новое множество
 			mySet := set.NewSet()
-
+		
 			// Создаем новый сканер для чтения ввода из консоли
 			reader := bufio.NewReader(os.Stdin)
-
+		
 			for !exit {
 				// Приглашение для ввода
 				fmt.Print("Введите команду (add, contains, delete, size, save, load, back): ")
-
+		
 				// Считываем ввод пользователя
 				input, _ := reader.ReadString('\n')
-
+		
 				// Убираем символы новой строки
 				input = strings.TrimSpace(input)
-
+		
 				// Разбиваем ввод на команду и аргументы
 				parts := strings.Split(input, " ")
 				command := parts[0]
-
+		
 				switch command {
 				case "add":
 					if len(parts) < 2 {
@@ -73,12 +72,9 @@ func main() {
 						fmt.Println("Ошибка при преобразовании аргумента:", err)
 						continue
 					}
-					err = mySet.SETADD(element)
-					if err != nil {
-						fmt.Println("Ошибка при добавлении элемента:", err)
-					} else {
-						fmt.Println("Элемент добавлен")
-					}
+					mySet.ADD(element)
+					//fmt.Println("Элемент добавлен")
+		
 				case "contains":
 					if len(parts) < 2 {
 						fmt.Println("Недостаточно аргументов для команды contains")
@@ -89,7 +85,8 @@ func main() {
 						fmt.Println("Ошибка при преобразовании аргумента:", err)
 						continue
 					}
-					fmt.Println("Содержит элемент:", mySet.SET_AT(element))
+					fmt.Println("Содержит элемент:", mySet.CONTAINS(element))
+		
 				case "delete":
 					if len(parts) < 2 {
 						fmt.Println("Недостаточно аргументов для команды delete")
@@ -100,10 +97,12 @@ func main() {
 						fmt.Println("Ошибка при преобразовании аргумента:", err)
 						continue
 					}
-					mySet.SETDEL(element)
+					mySet.DELETE(element)
 					fmt.Println("Элемент удален")
+		
 				case "size":
 					fmt.Println("Текущее количество элементов в множестве:", mySet.Size())
+		
 				case "save":
 					if len(parts) < 2 {
 						fmt.Println("Недостаточно аргументов для команды save")
@@ -116,6 +115,7 @@ func main() {
 					} else {
 						fmt.Println("Множество сохранено в файл:", filename)
 					}
+		
 				case "load":
 					if len(parts) < 2 {
 						fmt.Println("Недостаточно аргументов для команды load")
@@ -128,133 +128,129 @@ func main() {
 					} else {
 						fmt.Println("Множество загружено из файла:", filename)
 					}
+		
 				case "back":
 					fmt.Println("Назад...")
 					exit = true
+		
 				default:
 					fmt.Println("Неизвестная команда")
 				}
 			}
 		case "3":
-
 			exit := false
+		mySet := set.NewSet()
+		reader := bufio.NewReader(os.Stdin)
 
-			// Создаем новое множество
-			mySet := set.NewSet()
-
-			// Создаем новый сканер для чтения ввода из консоли
-			reader := bufio.NewReader(os.Stdin)
-
-			for !exit {
-				// Приглашение для ввода
-				fmt.Print("Введите команду (add, contains, delete, size, save, load, partit, back): ")
-
-				// Считываем ввод пользователя
-				input, _ := reader.ReadString('\n')
-
-				// Убираем символы новой строки
-				input = strings.TrimSpace(input)
-
-				// Разбиваем ввод на команду и аргументы
-				parts := strings.Split(input, " ")
-				command := parts[0]
-
-				switch command {
-				case "add":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды add")
-						continue
-					}
-					element, err := strconv.Atoi(parts[1])
-					if err != nil {
-						fmt.Println("Ошибка при преобразовании аргумента:", err)
-						continue
-					}
-					err = mySet.SETADD(element)
-					if err != nil {
-						fmt.Println("Ошибка при добавлении элемента:", err)
-					} else {
-						fmt.Println("Элемент добавлен")
-					}
-				case "contains":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды contains")
-						continue
-					}
-					element, err := strconv.Atoi(parts[1])
-					if err != nil {
-						fmt.Println("Ошибка при преобразовании аргумента:", err)
-						continue
-					}
-					fmt.Println("Содержит элемент:", mySet.SET_AT(element))
-				case "delete":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды delete")
-						continue
-					}
-					element, err := strconv.Atoi(parts[1])
-					if err != nil {
-						fmt.Println("Ошибка при преобразовании аргумента:", err)
-						continue
-					}
-					mySet.SETDEL(element)
-					fmt.Println("Элемент удален")
-				case "size":
-					fmt.Println("Текущее количество элементов в множестве:", mySet.Size())
-				case "save":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды save")
-						continue
-					}
-					filename := parts[1]
-					err := mySet.SaveToFile(filename)
-					if err != nil {
-						fmt.Println("Ошибка при сохранении в файл:", err)
-					} else {
-						fmt.Println("Множество сохранено в файл:", filename)
-					}
-				case "load":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды load")
-						continue
-					}
-					filename := parts[1]
-					err := mySet.LoadFromFile(filename)
-					if err != nil {
-						fmt.Println("Ошибка при загрузке из файла:", err)
-					} else {
-						fmt.Println("Множество загружено из файла:", filename)
-					}
-				case "partit":
-					if len(parts) < 2 {
-						fmt.Println("Недостаточно аргументов для команды partit")
-						continue
-					}
-
-					element, err := strconv.Atoi(parts[1])
-					mySet.Partition(element)
-					if err != nil {
-						fmt.Println("Ошибка разбиения: ", err)
-					}
-				case "back":
-					fmt.Println("Назад...")
-					exit = true
-				default:
-					fmt.Println("Неизвестная команда")
-				}
-			}
-		case "4":
-			// Чтение строки с элементами массива от пользователя
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Println("Введите элементы массива через пробел:")
+		for !exit {
+			fmt.Print("Введите команду (add, contains, delete, size, save, load, partit, back): ")
 			input, _ := reader.ReadString('\n')
 			input = strings.TrimSpace(input)
+			parts := strings.Split(input, " ")
+			command := parts[0]
 
-			// Разбиваем строку на элементы массива
-			S := strings.Split(input, " ")
+			switch command {
+			case "add":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды add")
+					continue
+				}
+				element, err := strconv.Atoi(parts[1])
+				if err != nil {
+					fmt.Println("Ошибка при преобразовании аргумента:", err)
+					continue
+				}
+				err = mySet.ADD(element)
+				if err != nil {
+					fmt.Println("Ошибка при добавлении элемента:", err)
+				} else {
+					fmt.Println("Элемент добавлен")
+				}
+			case "contains":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды contains")
+					continue
+				}
+				element, err := strconv.Atoi(parts[1])
+				if err != nil {
+					fmt.Println("Ошибка при преобразовании аргумента:", err)
+					continue
+				}
+				fmt.Println("Содержит элемент:", mySet.CONTAINS(element))
+			case "delete":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды delete")
+					continue
+				}
+				element, err := strconv.Atoi(parts[1])
+				if err != nil {
+					fmt.Println("Ошибка при преобразовании аргумента:", err)
+					continue
+				}
+				mySet.DELETE(element)
+				fmt.Println("Элемент удален")
+			case "size":
+				fmt.Println("Текущее количество элементов в множестве:", mySet.Size())
+			case "save":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды save")
+					continue
+				}
+				filename := parts[1]
+				err := mySet.SaveToFile(filename)
+				if err != nil {
+					fmt.Println("Ошибка при сохранении в файл:", err)
+				} else {
+					fmt.Println("Множество сохранено в файл:", filename)
+				}
+			case "load":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды load")
+					continue
+				}
+				filename := parts[1]
+				err := mySet.LoadFromFile(filename)
+				if err != nil {
+					fmt.Println("Ошибка при загрузке из файла:", err)
+				} else {
+					fmt.Println("Множество загружено из файла:", filename)
+				}
+			case "partit":
+				if len(parts) < 2 {
+					fmt.Println("Недостаточно аргументов для команды partit")
+					continue
+				}
+				element, err := strconv.Atoi(parts[1])
+				if err != nil {
+					fmt.Println("Ошибка при преобразовании аргумента:", err)
+					continue
+				}
+				mySet.Partition(element)
+			case "back":
+				fmt.Println("Назад...")
+				exit = true
+			default:
+				fmt.Println("Неизвестная команда")
+			}
+		}
+		case "4":
+		// Чтение строки с элементами массива от пользователя
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Введите элементы массива через пробел:")
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
 
-			// Генерируем и выводим подмножества
-			array.GenerateSubsets(S)
+		// Разбиваем строку на элементы массива
+		S := strings.Split(input, " ")
+
+		// Создаем MyArray и добавляем элементы
+		arr := array.NewMyArray[string](len(S))
+		for _, item := range S {
+			arr.MPUSH(item)
+		}
+
+		// Генерируем и выводим подмассивы
+		arr.PrintSubarrays()
 		case "5":
 			tree := &bst.Tree{}
 
@@ -283,10 +279,17 @@ func main() {
 				tree.Insert(v)
 			}
 
-			reader2 := bufio.NewReader(os.Stdin)
-			input1, _ := reader2.ReadString('\n')
-			value, _ := strconv.Atoi(input1)
-			tree.Delete(value)
+			fmt.Printf("Дерево корректно: %v\n", tree.IsValidBST())
+
+			// Ввод значения для удаления
+			fmt.Println("Введите значение для удаления из дерева:")
+			input1, _ := reader.ReadString('\n')
+			value, err := strconv.Atoi(strings.TrimSpace(input1))
+			if err == nil {
+				tree.Delete(value)
+			} else {
+				fmt.Println("Некорректное значение для удаления.")
+			}
 
 			// Вывод дерева в порядке возрастания
 			fmt.Println("Дерево в порядке возрастания:")

@@ -1,9 +1,7 @@
 package set
 
-
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,58 +9,42 @@ import (
 
 // Set - структура для реализации множества
 type Set struct {
-	data [100]int // Массив фиксированной длины для хранения элементов
-	size int      // Текущий размер множества
+	data map[int]struct{} // Хэш-таблица для хранения элементов
+	size int              // Текущий размер множества
 }
 
 // NewSet создает новое множество
 func NewSet() *Set {
 	return &Set{
+		data: make(map[int]struct{}), // Инициализация хэш-таблицы
 		size: 0,
 	}
 }
 
-// SETADD добавляет элемент в множество
-func (s *Set) SETADD(value int) error {
-	if s.size >= len(s.data) {
-		return errors.New("множество переполнено") // Проверка на переполнение
+// ADD добавляет элемент в множество
+func (s *Set) ADD(value int) error {
+	if _, exists := s.data[value]; exists {
+		fmt.Println("Элемент уже есть в множестве")
+		return nil // Элемент уже существует
 	}
 
-	// Проверка, существует ли элемент уже в множестве
-	for i := 0; i < s.size; i++ {
-		if s.data[i] == value {
-			return nil // Элемент уже существует
-		}
-	}
-
-	// Добавление нового элемента
-	s.data[s.size] = value
+	s.data[value] = struct{}{} // Добавление нового элемента
 	s.size++
 	return nil
 }
 
-// SETDEL удаляет элемент из множества
-func (s *Set) SETDEL(value int) {
-	for i := 0; i < s.size; i++ {
-		if s.data[i] == value {
-			// Сдвигаем все элементы влево, чтобы удалить элемент
-			for j := i; j < s.size-1; j++ {
-				s.data[j] = s.data[j+1]
-			}
-			s.size-- // Уменьшаем размер множества
-			return
-		}
+// DELETE удаляет элемент из множества
+func (s *Set) DELETE(value int) {
+	if _, exists := s.data[value]; exists {
+		delete(s.data, value) // Удаление элемента
+		s.size--              // Уменьшаем размер множества
 	}
 }
 
-// SET_AT проверяет, содержится ли элемент в множестве
-func (s *Set) SET_AT(value int) bool {
-	for i := 0; i < s.size; i++ {
-		if s.data[i] == value {
-			return true // Элемент найден
-		}
-	}
-	return false // Элемент не найден
+// CONTAINS проверяет, содержится ли элемент в множестве
+func (s *Set) CONTAINS(value int) bool {
+	_, exists := s.data[value]
+	return exists // Элемент найден или не найден
 }
 
 // Size возвращает текущее количество элементов в множестве
@@ -78,8 +60,8 @@ func (s *Set) SaveToFile(filename string) error {
 	}
 	defer file.Close()
 
-	for i := 0; i < s.size; i++ {
-		_, err := file.WriteString(fmt.Sprintf("%d\n", s.data[i]))
+	for value := range s.data {
+		_, err := file.WriteString(fmt.Sprintf("%d\n", value))
 		if err != nil {
 			return err
 		}
@@ -101,7 +83,7 @@ func (s *Set) LoadFromFile(filename string) error {
 		if err != nil {
 			return err
 		}
-		err = s.SETADD(value)
+		err = s.ADD(value) // Добавляем элемент в множество
 		if err != nil {
 			return err
 		}
