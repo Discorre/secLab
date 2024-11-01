@@ -1,62 +1,64 @@
 package hashmap
 
-import "errors"
-
-// Node представляет узел в хеш-таблице
+// Node представляет элемент связного списка.
 type Node struct {
-	Key   rune
-	Value rune
-	Next  *Node
+	key   rune
+	value rune
+	next  *Node
 }
 
-// MyHashMap представляет хеш-таблицу
-type MyHashMap struct {
-	buckets [128]*Node // Массив из 128 "ведер" (достаточно для хранения символов ASCII)
+// HashMap представляет хэш-таблицу.
+type HashMap struct {
+	buckets []*Node
+	size    int
 }
 
-// NewHashMap создает новую хеш-таблицу
-func NewHashMap() *MyHashMap {
-	return &MyHashMap{}
-}
-
-// Put добавляет соответствие ключа и значения в хеш-таблицу
-func (h *MyHashMap) Put(key rune, value rune) error {
-	index := key % 128 // Вычисляем индекс в массиве
-	node := h.buckets[index]
-
-	// Если в "ведре" нет узлов, создаем новый
-	if node == nil {
-		h.buckets[index] = &Node{Key: key, Value: value}
-		return nil
+// NewHashMap создает новую хэш-таблицу с заданным размером.
+func NewHashMap() *HashMap {
+	return &HashMap{
+		buckets: make([]*Node, 100), // Устанавливаем размер по умолчанию
+		size:    100,
 	}
-
-	// Ищем существующий узел или добавляем новый
-	for node != nil {
-		if node.Key == key {
-			// Если ключ уже существует, обновляем значение
-			node.Value = value
-			return nil
-		}
-		if node.Next == nil {
-			// Если дошли до конца списка, добавляем новый узел
-			node.Next = &Node{Key: key, Value: value}
-			return nil
-		}
-		node = node.Next
-	}
-	return nil
 }
 
-// Get получает значение по ключу из хеш-таблицы
-func (h *MyHashMap) Get(key rune) (rune, error) {
-	index := key % 128 // Вычисляем индекс в массиве
-	node := h.buckets[index]
+// hash функция для вычисления индекса на основе ключа.
+func (h *HashMap) hash(key rune) int {
+	return int(key) % h.size
+}
 
-	for node != nil {
-		if node.Key == key {
-			return node.Value, nil // Если нашли, возвращаем значение
+// Put добавляет значение в HashMap.
+func (h *HashMap) Put(key rune, value rune) {
+	index := h.hash(key)
+	newNode := &Node{key: key, value: value}
+
+	if h.buckets[index] == nil {
+		h.buckets[index] = newNode
+	} else {
+		current := h.buckets[index]
+		for current != nil {
+			if current.key == key {
+				current.value = value // Обновляем значение, если ключ уже существует
+				return
+			}
+			if current.next == nil {
+				break
+			}
+			current = current.next
 		}
-		node = node.Next
+		current.next = newNode
 	}
-	return 0, errors.New("ключ не найден") // Если не нашли, возвращаем ошибку
+}
+
+// Get получает значение по ключу.
+func (h *HashMap) Get(key rune) (rune, bool) {
+	index := h.hash(key)
+	current := h.buckets[index]
+
+	for current != nil {
+		if current.key == key {
+			return current.value, true
+		}
+		current = current.next
+	}
+	return 0, false
 }

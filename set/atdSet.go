@@ -1,97 +1,130 @@
 package set
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
+	"os"
 )
 
-// Set - структура для реализации множества
-type Set struct {
-	data map[int]struct{} // Хэш-таблица для хранения элементов
-	size int              // Текущий размер множества
+// Тип Set на основе uint32, где каждый бит обозначает наличие числа от 0 до 31
+type Set uint32
+
+// Добавление элемента в Set
+func (s *Set) Add(element int) {
+	*s |= (1 << element) // Сдвигаем бит влево на `element` позиций и делаем побитовое ИЛИ с текущим Set
 }
 
-// NewSet создает новое множество
-func NewSet() *Set {
-	return &Set{
-		data: make(map[int]struct{}), // Инициализация хэш-таблицы
-		size: 0,
+// Проверка, содержится ли элемент в Set
+func (s *Set) Contains(element int) bool {
+	return *s&(1<<element) != 0 // Сдвигаем бит влево и проверяем с помощью побитового И, установлен ли соответствующий бит
+}
+
+// Удаление элемента из Set
+func (s *Set) Remove(element int) {
+	*s &^= (1 << element) // Сдвигаем бит влево и делаем побитовое И НЕ, чтобы сбросить бит
+}
+
+// Подсчет суммы элементов множества с помощью Set
+func (s *Set) Sum() int {
+	sum := 0
+	for i := 0; i < 32; i++ { // Перебираем все 32 возможных бита
+		if s.Contains(i) {    // Если бит установлен, то число i присутствует в Set
+			sum += i
+		}
 	}
+	return sum // Возвращаем сумму всех элементов
 }
 
-// ADD добавляет элемент в множество
-func (s *Set) ADD(value int) error {
-	if _, exists := s.data[value]; exists {
-		fmt.Println("Элемент уже есть в множестве")
-		return nil // Элемент уже существует
+// Подсчет количества элементов в Set
+func (s *Set) Count() int {
+	count := 0
+	for i := 0; i < 32; i++ { // Перебираем все возможные элементы
+		if s.Contains(i) { // Если элемент присутствует в множестве
+			count++ // Увеличиваем счетчик
+		}
 	}
-
-	s.data[value] = struct{}{} // Добавление нового элемента
-	s.size++
-	return nil
+	return count // Возвращаем количество элементов
 }
 
-// DELETE удаляет элемент из множества
-func (s *Set) DELETE(value int) {
-	if _, exists := s.data[value]; exists {
-		delete(s.data, value) // Удаление элемента
-		s.size--              // Уменьшаем размер множества
-	}
-}
-
-// CONTAINS проверяет, содержится ли элемент в множестве
-func (s *Set) CONTAINS(value int) bool {
-	_, exists := s.data[value]
-	return exists // Элемент найден или не найден
-}
-
-// Size возвращает текущее количество элементов в множестве
-func (s *Set) Size() int {
-	return s.size
-}
-
-// SaveToFile сохраняет множество в файл
-func (s *Set) SaveToFile(filename string) error {
-	file, err := os.Create(filename)
+// Запись множества в файл
+func (s *Set) WriteToFile(filename string) error {
+	file, err := os.Create(filename) // Создаем файл с указанным именем
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer file.Close() // Закрываем файл после завершения
 
-	for value := range s.data {
-		_, err := file.WriteString(fmt.Sprintf("%d\n", value))
-		if err != nil {
-			return err
+	for i := 0; i < 32; i++ { // Перебираем все возможные элементы
+		if s.Contains(i) { // Если элемент присутствует в множестве
+			_, err := file.WriteString(strconv.Itoa(i) + "\n") // Записываем элемент в файл
+			if err != nil {
+				return err
+			}
 		}
 	}
-	return nil
+	return nil // Успешное завершение
 }
 
-// LoadFromFile загружает множество из файла
-func (s *Set) LoadFromFile(filename string) error {
-	file, err := os.Open(filename)
+// Чтение множества из файла
+func (s *Set) ReadFromFile(filename string) error {
+	file, err := os.Open(filename) // Открываем файл для чтения
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer file.Close() // Закрываем файл после завершения
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		value, err := strconv.Atoi(scanner.Text())
+	var element int
+	for {
+		_, err := fmt.Fscanf(file, "%d\n", &element) // Считываем каждый элемент из файла
 		if err != nil {
-			return err
+			break // Выходим из цикла при ошибке (например, конец файла)
 		}
-		err = s.ADD(value) // Добавляем элемент в множество
-		if err != nil {
-			return err
+		s.Add(element) // Добавляем элемент в множество
+	}
+	return nil // Успешное завершение
+}
+
+// Функция для разбиения множества на подмножества
+func Partition(set Set, target int) (Set, error) {
+	var result Set  // Хранение подмножеств, каждое из которых представлено типом Set
+	used := Set(0)  // Set для отслеживания использованных элементов
+	var backtrack func(Set, int, int) bool
+
+	backtrack = func(currentSet Set, startElement, currentSum int) bool {
+		if currentSum == target {
+			// Если сумма текущего подмножества равна целевой, добавляем его в результат
+			result |= currentSet  // Добавляем подмножество в результат
+			// Добавляем элементы из currentSet в used, чтобы избежать их повторного использования
+			used |= currentSet
+			return true
+		}
+
+		// Перебор элементов для формирования подмножества
+		for i := startElement; i < 32; i++ {
+			if !set.Contains(i) || used.Contains(i) || currentSum+i > target {
+				continue
+			}
+
+			currentSet.Add(i)
+			if backtrack(currentSet, i+1, currentSum+i) {
+				return true
+			}
+			currentSet.Remove(i)
+		}
+		return false
+	}
+
+	// Повторно вызываем backtrack, чтобы найти все подмножества, пока это возможно
+	for {
+		currentSet := Set(0)
+		if !backtrack(currentSet, 1, 0) {  // Стартуем с 1, так как множество натуральных чисел
+			break
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
+	// Проверка, что сумма всех подмножеств равна общей сумме
+	if used.Sum() != set.Sum() {
+		return 0, fmt.Errorf("невозможно разбить на подмножества с равной суммой")
 	}
-
-	return nil
+	return result, nil
 }
